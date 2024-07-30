@@ -1,66 +1,213 @@
 # Santander Dev Week 2023 Java API
 
-RESTful API da Santander Dev Week 2023 construída em Java 17 com Spring Boot 3.
+package com.exemplo.santander;
 
-## Principais Tecnologias
- - **Java 17**: Utilizaremos a versão LTS mais recente do Java para tirar vantagem das últimas inovações que essa linguagem robusta e amplamente utilizada oferece;
- - **Spring Boot 3**: Trabalharemos com a mais nova versão do Spring Boot, que maximiza a produtividade do desenvolvedor por meio de sua poderosa premissa de autoconfiguração;
- - **Spring Data JPA**: Exploraremos como essa ferramenta pode simplificar nossa camada de acesso aos dados, facilitando a integração com bancos de dados SQL;
- - **OpenAPI (Swagger)**: Vamos criar uma documentação de API eficaz e fácil de entender usando a OpenAPI (Swagger), perfeitamente alinhada com a alta produtividade que o Spring Boot oferece;
- - **Railway**: facilita o deploy e monitoramento de nossas soluções na nuvem, além de oferecer diversos bancos de dados como serviço e pipelines de CI/CD.
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-## [Link do Figma](https://www.figma.com/file/0ZsjwjsYlYd3timxqMWlbj/SANTANDER---Projeto-Web%2FMobile?type=design&node-id=1421%3A432&mode=design&t=6dPQuerScEQH0zAn-1)
+@SpringBootApplication
+public class SantanderApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SantanderApplication.class, args);
+    }
+}
+package com.exemplo.santander.model;
 
-O Figma foi utilizado para a abstração do domínio desta API, sendo útil na análise e projeto da solução.
+import javax.persistence.*;
+import java.util.List;
 
-## Diagrama de Classes (Domínio da API)
+@Entity
+public class Usuario {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-```mermaid
-classDiagram
-  class User {
-    -String name
-    -Account account
-    -Feature[] features
-    -Card card
-    -News[] news
-  }
+    private String nome;
 
-  class Account {
-    -String number
-    -String agency
-    -Number balance
-    -Number limit
-  }
+    @OneToOne(cascade = CascadeType.ALL)
+    private Conta conta;
 
-  class Feature {
-    -String icon
-    -String description
-  }
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Funcionalidade> funcionalidades;
 
-  class Card {
-    -String number
-    -Number limit
-  }
+    @OneToOne(cascade = CascadeType.ALL)
+    private Cartao cartao;
 
-  class News {
-    -String icon
-    -String description
-  }
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Noticia> noticias;
 
-  User "1" *-- "1" Account
-  User "1" *-- "N" Feature
-  User "1" *-- "1" Card
-  User "1" *-- "N" News
-```
+    // Getters e Setters
+    // ...
+}
 
-## Documentação da API (Swagger)
+@Entity
+public class Conta {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-### [https://sdw-2023-prd.up.railway.app/swagger-ui.html](https://sdw-2023-prd.up.railway.app/swagger-ui.html)
+    private String numero;
+    private String agencia;
+    private Double saldo;
+    private Double limite;
 
-Esta API ficará disponível no Railway por um período de tempo limitado, mas este é um código-fonte aberto. Portanto, sintam-se à vontade para cloná-lo, modificá-lo (já que é um bom projeto base para novos projetos) e executar localmente ou onde achar mais interessante! Só não esquece de marcar a gente quando divulgar a sua solução 🥰
+    // Getters e Setters
+    // ...
+}
 
-### IMPORTANTE
+@Entity
+public class Funcionalidade {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-Aos interessados no desenvolvimento da tela inicial do App do Santander (Figma) em Angular, Android, iOS ou Flutter... Caso a URL produtiva não esteja mais disponível, deixamos um Backup no GitHub Pages, é só dar um GET lá 😘
-- URL de Produção: https://sdw-2023-prd.up.railway.app/users/1
-- Mock (Backup): https://digitalinnovationone.github.io/santander-dev-week-2023-api/mocks/find_one.json
+    private String icone;
+    private String descricao;
+
+    // Getters e Setters
+    // ...
+}
+
+@Entity
+public class Cartao {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String numero;
+    private Double limite;
+
+    // Getters e Setters
+    // ...
+}
+
+@Entity
+public class Noticia {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String icone;
+    private String descricao;
+
+    // Getters e Setters
+    // ...
+}
+package com.exemplo.santander.repository;
+
+import com.exemplo.santander.model.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+}
+
+public interface ContaRepository extends JpaRepository<Conta, Long> {
+}
+
+public interface FuncionalidadeRepository extends JpaRepository<Funcionalidade, Long> {
+}
+
+public interface CartaoRepository extends JpaRepository<Cartao, Long> {
+}
+
+public interface NoticiaRepository extends JpaRepository<Noticia, Long> {
+}
+package com.exemplo.santander.service;
+
+import com.exemplo.santander.model.Usuario;
+import com.exemplo.santander.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class UsuarioService {
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    public Usuario salvarUsuario(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
+    public void deletarUsuario(Long id) {
+        usuarioRepository.deleteById(id);
+    }
+}
+package com.exemplo.santander.controller;
+
+import com.exemplo.santander.model.Usuario;
+import com.exemplo.santander.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/usuarios")
+public class UsuarioController {
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @GetMapping
+    public List<Usuario> listarUsuarios() {
+        return usuarioService.listarUsuarios();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
+        Optional<Usuario> usuario = usuarioService.buscarUsuarioPorId(id);
+        return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public Usuario salvarUsuario(@RequestBody Usuario usuario) {
+        return usuarioService.salvarUsuario(usuario);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarUsuario(@PathVariable Long id) {
+        usuarioService.deletarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+package com.exemplo.santander.config;
+
+import org.springdoc.core.GroupedOpenApi;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+                .group("api")
+                .pathsToMatch("/**")
+                .build();
+    }
+}
+# Configuração do banco de dados em memória H2
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+
+# JPA
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+
+# Swagger
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
