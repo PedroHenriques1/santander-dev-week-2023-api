@@ -1,8 +1,6 @@
-# Santander Dev Week 2023 Java API
-
-package com.exemplo.santander;
-
 # 🚀 Santander Dev Week 2023 – Java API
+package com.exemplo.santander;
+> **Observação:** Este projeto **não possui front-end implementado no momento**. Todas as interações são feitas via API.
 
 Projeto desenvolvido como parte da **Santander Dev Week 2023**, utilizando o ecossistema **Java + Spring Boot**, com foco na construção e aprendizagem sobre o que é uma API REST e como usar para simular os dados de um aplicativo bancário.
 
